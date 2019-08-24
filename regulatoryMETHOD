@@ -7,15 +7,15 @@ In different countries, legislation and technical standards varies, including in
 Regulatory domains (or "regdomain") is the country in which this device is supposed to work. There is also an accompanying database, in which are prescribed the permitted frequencies and the allowed power.
 The algorithm is:
 
-    set the system-wide setting of the regulatory domain to the value, that matches to a country where the power is allowed to be 30.0 dBm;
-    set the increased power for the wireless adapter.
+set the system-wide setting of the regulatory domain to the value, that matches to a country where the power is allowed to be 30.0 dBm;
+set the increased power for the wireless adapter.
 
 In theory, the described method should work for many wireless cards, but in practice there are the following limitations:
-    the physical inability of an adapter to operate at capacities greater than 20.0 dBm (for example, the wireless interface initially shows a power of 15.0 dBm while 20.0 dBm is allowed. In this case it is impossible to raise the power above 15.0 dBm, even to 20.0 dBm);
-    driver features, for example, some drivers ignore system settings. This is not an insoluble problem, but each model needs its own approach.
+the physical inability of an adapter to operate at capacities greater than 20.0 dBm (for example, the wireless interface initially shows a power of 15.0 dBm while 20.0 dBm is allowed. In this case it is impossible to raise the power above 15.0 dBm, even to 20.0 dBm);
+driver features, for example, some drivers ignore system settings. This is not an insoluble problem, but each model needs its own approach.
 To check capabilities of your wireless adapter issue the command:
 
-	sudo iw list
+	#~sudo iw list
 
 For example, the following frequencies and power are allowed for the US:
 You can examine the full current database in pain text here.
@@ -30,61 +30,55 @@ Note that for channels at 5 GHz they have different values (different list of al
 Next, I'll show the power increasing of Alfa AWUS052NH in Kali Linux. The old guides tell to install additional packages, but currently this is not necessary. Everything you need is already available in Kali Linux!
 To find out which region is currently configured, run the command:
 
-	sudo iw reg get
+	#~sudo iw reg get
 
 The string country 00 indicates that I have not set any value and the default settings was applied.
 Now set the regulatory domains to BZ:
 
-	
-sudo iw reg set BZ
+	#~sudo iw reg set BZ
 
 To insure the setting was applied run the command:
 
-	
-sudo iw reg get
+	#~sudo iw reg get
 
 At the same time, you can look at the new features with the command:
 
-	
-sudo iw list
+	#~sudo iw list
 
 To view the name of the wireless interface and its current status, use the command:
 
-	
-sudo iw dev
+	#~sudo iw dev
 
 Next, increase the power (replace wlan0 with the actual name of your wireless interface):
 	
-sudo ip link set wlan0 down
-sudo iw dev wlan0 set txpower fixed 30mBm
-# sudo iw wlan0 set monitor control # if monitor mode needed
-sudo ip link set wlan0 up
+	#~sudo ip link set wlan0 down
+	 #~sudo iw dev wlan0 set txpower fixed 30mBm
+	  #~sudo iw wlan0 set monitor control # if monitor mode needed
+	   #~sudo ip link set wlan0 up
 
 Checking:
 	
-sudo iw dev
+	#~sudo iw dev
 
 The line txpower 30.00 dBm indicates that we have succeeded.
-
 How to increase TX-Power of Alfa AWUS036NHA
-
 The above commands have no effect for AWUS036NHA. The driver of this adapter ignores regulatory domain value.
 If you have Alfa AWUS036NHA or any other that ignores settings of regulatory domain, this is no reason to give up.
 We are able to change database of the world regulatory domain.
 First let's check which country your wireless card is made for:
 
-sudo iw reg get
+	#~sudo iw reg get
 
 In my case, the country GB line indicates that the adaptor was produced for the country that is named GB in the database.
 My method differs from other tutorials, where the wireless-regdb and crda packages are manually installed. These packages should already be installed on your system (in Kali Linux is the default). The only thing we do is replace the database file.
 We clone the source files:
 	
-git clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git
-cd wireless-regdb/
+	#~git clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git
+	 cd wireless-regdb/
 
 Now we need to edit the database file:
 
-gedit db.txt
+	#~leafpad gedit db.txt
 
 In the file, find the country 00 line and replace line after it with something like that (correct it up to you):
 	
@@ -98,26 +92,26 @@ Save and close the file.
 
 Execute the command:
 	
-make
+	#~make
 
 As a result, a binary file of the database (regulatory.bin) was created from the text file. We will use it to replace the file with the same name in the system.
 Delete the original database file:
 
-sudo rm /lib/crda/regulatory.bin
+	#~sudo rm /lib/crda/regulatory.bin
 
 We copy our modified database:
 
-sudo cp regulatory.bin /lib/crda/regulatory.bin
+	#~sudo cp regulatory.bin /lib/crda/regulatory.bin
 
 We copy the required public key (the database file is signed with a specially generated key for our user):
 
-sudo cp $USER.key.pub.pem /lib/crda/pubkeys/
+	#~sudo cp $USER.key.pub.pem /lib/crda/pubkeys/
 
 Restart your computer.
 Now do not use sudo iw reg set BZ.
 Let us check:
 
-sudo iw reg get
+	#~sudo iw reg get
 
 Strings
 
@@ -128,13 +122,13 @@ mean we are able increasing the power to 30 dBm.
 
 We try:
 
-sudo ip link set wlan0 down
-sudo iw dev wlan0 set txpower fixed 30mBm
-# sudo iw wlan0 set monitor control # if monitor mode needed
-sudo ip link set wlan0 up
+	#~sudo ip link set wlan0 down
+	 #~sudo iw dev wlan0 set txpower fixed 30mBm
+	  #~sudo iw wlan0 set monitor control # if monitor mode needed
+	   #~sudo ip link set wlan0 up
 
 Result:
 After we patched the database, there is no longer any need to change the value of the regulatory domains for any wireless interface!
 Conclusion
 Increasing TX power of the Wi-Fi adapter is undeniably useful only for Wi-Fi jamming, as well as for deauthentication attacks. In all other attacks, increasing TX power would not matter. Since power affects how loudly your Wi-Fi adapter is “talking”, but does not increase its sensitivity (how well it ‘hears’ others).
-Changing value of regulatory domains lets to unlock some channels that might not be available in your country.
+Changing value of regulatory domains lets to unlock some channels that might not be available in your country
